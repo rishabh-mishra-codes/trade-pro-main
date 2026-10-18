@@ -9,7 +9,7 @@ import {
     FaChartLine,
 } from "react-icons/fa";
 
-import { getQuotesFor, INDIAN_STOCKS } from "../services/indianStockService";
+import { getQuotesFor } from "../services/indianStockService";
 import authService from "../services/authService";
 import {
     fetchPortfolio,
@@ -123,7 +123,7 @@ function Home() {
                 const baseStocks =
                     wl && wl.length
                         ? wl.map((w) => ({ symbol: w.symbol, name: w.name }))
-                        : INDIAN_STOCKS.slice(0, 5);
+                        : [];
                 // If arriving from the Market Dashboard with a preselected
                 // symbol, make sure it's quoted so its chart can open.
                 if (

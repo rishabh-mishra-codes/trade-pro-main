@@ -7,10 +7,8 @@ import PasswordField from "../components/PasswordField";
 import AuthLayout from "../components/AuthLayout";
 import TextInput from "../components/TextInput";
 import { evaluatePassword } from "../utils/passwordStrength";
-
 function Register() {
     const navigate = useNavigate();
-
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -18,11 +16,9 @@ function Register() {
     const [phoneNumber, setPhoneNumber] = useState("");
     const [error, setError] = useState("");
     const [submitting, setSubmitting] = useState(false);
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
-
         if (password !== confirmPassword) {
             setError("Passwords do not match");
             return;
@@ -31,10 +27,18 @@ function Register() {
             setError("Please choose a stronger password");
             return;
         }
-
+        if (phoneNumber && !/^\d{10}$/.test(phoneNumber)) {
+            setError("Phone number must be exactly 10 digits");
+            return;
+        }
         setSubmitting(true);
         try {
-            await authService.register({ fullName, email, password, phoneNumber });
+            await authService.register({
+                fullName,
+                email,
+                password,
+                phoneNumber: phoneNumber || undefined,
+            });
             navigate("/home");
         } catch (err) {
             setError(err.message || "Registration failed");
@@ -42,7 +46,6 @@ function Register() {
             setSubmitting(false);
         }
     };
-
     return (
         <AuthLayout title="Create account" subtitle="Start trading in minutes">
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -54,7 +57,6 @@ function Register() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                 />
-
                 <TextInput
                     type="email"
                     icon={<MdEmail />}
@@ -63,31 +65,28 @@ function Register() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Email"
                 />
-
                 <TextInput
                     type="tel"
                     icon={<FaUser />}
+                    inputMode="numeric"
+                    maxLength={10}
                     value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, "").slice(0, 10))}
                     placeholder="Phone (optional)"
                 />
-
                 <PasswordField
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     showStrength
                 />
-
                 <PasswordField
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Confirm Password"
                     required
                 />
-
                 {error && <p className="text-sm text-red-500">{error}</p>}
-
                 <button
                     disabled={submitting}
                     className="w-full bg-linear-to-r from-indigo-600 to-violet-600 hover:opacity-90 transition text-white font-semibold py-3 rounded-xl shadow-lg shadow-indigo-500/20 disabled:opacity-60"
@@ -95,7 +94,6 @@ function Register() {
                     {submitting ? "Creating..." : "Create account"}
                 </button>
             </form>
-
             <p className="text-muted mt-6 text-sm">
                 Already have an account?
                 <Link to="/" className="text-(--accent) ml-1.5 font-semibold">
@@ -105,5 +103,4 @@ function Register() {
         </AuthLayout>
     );
 }
-
 export default Register;

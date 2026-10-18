@@ -1,12 +1,10 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
-
 // Auth pages load eagerly (entry points). Everything behind login is lazy
 // loaded so the initial bundle stays small and fast.
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
-
 const Home = lazy(() => import("./pages/Home"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Orders = lazy(() => import("./pages/Orders"));
@@ -15,7 +13,7 @@ const EmiCalculator = lazy(() => import("./pages/EmiCalculator"));
 const MarketDashboard = lazy(() => import("./pages/MarketDashboard"));
 const PortfolioAnalysis = lazy(() => import("./pages/PortfolioAnalysis"));
 const PaperTrading = lazy(() => import("./pages/PaperTrading"));
-
+const Watchlist = lazy(() => import("./pages/Watchlist"));
 function Loader() {
     return (
         <div className="min-h-screen app-bg flex items-center justify-center">
@@ -23,7 +21,6 @@ function Loader() {
         </div>
     );
 }
-
 function App() {
     return (
         <Suspense fallback={<Loader />}>
@@ -39,9 +36,9 @@ function App() {
                 <Route path="/market" element={<MarketDashboard />} />
                 <Route path="/analysis" element={<PortfolioAnalysis />} />
                 <Route path="/paper" element={<PaperTrading />} />
+                <Route path="/watchlist" element={<Watchlist />} />
             </Routes>
         </Suspense>
     );
 }
-
 export default App;

@@ -6,7 +6,6 @@ import { getAlerts, createAlert, deleteAlert } from "../services/alertService";
 import { getAvatar } from "../services/profileService";
 import NavBar from "../components/NavBar";
 import StockSearch from "../components/StockSearch";
-
 function Alerts() {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
@@ -16,7 +15,6 @@ function Alerts() {
     const [direction, setDirection] = useState("ABOVE");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-
     const load = useCallback(async () => {
         try {
             setAlerts(await getAlerts());
@@ -24,7 +22,6 @@ function Alerts() {
             /* ignore */
         }
     }, []);
-
     useEffect(() => {
         const init = async () => {
             try {
@@ -39,7 +36,6 @@ function Alerts() {
         };
         init();
     }, [navigate, load]);
-
     const submit = async (e) => {
         e.preventDefault();
         setError("");
@@ -59,17 +55,14 @@ function Alerts() {
             setError(err.message);
         }
     };
-
     const remove = async (id) => {
         await deleteAlert(id);
         await load();
     };
-
     const logout = async () => {
         await authService.logout();
         navigate("/");
     };
-
     if (loading) {
         return (
             <div className="min-h-screen app-bg flex items-center justify-center">
@@ -77,7 +70,6 @@ function Alerts() {
             </div>
         );
     }
-
     return (
         <div className="min-h-screen app-bg">
             <NavBar user={user} onLogout={logout} live />
@@ -88,13 +80,13 @@ function Alerts() {
                 >
                     <FaArrowLeft /> Back to dashboard
                 </button>
-
                 <h1 className="text-2xl font-bold mb-5 flex items-center gap-2">
                     <FaBell className="text-indigo-400" /> Price Alerts
                 </h1>
-
                 <form onSubmit={submit} className="surface rounded-2xl p-5 mb-8 space-y-4">
-                    <StockSearch onPick={setPicked} />
+                    <div className="relative z-30">
+                        <StockSearch onPick={setPicked} />
+                    </div>
                     {picked && (
                         <p className="text-sm">
                             Selected: <span className="font-semibold">{picked.name}</span>{" "}
@@ -105,10 +97,21 @@ function Alerts() {
                         <select
                             value={direction}
                             onChange={(e) => setDirection(e.target.value)}
-                            className="rounded-xl bg-white/10 px-4 py-2 outline-none"
+                            className="rounded-xl border border-(--border) px-4 py-2 outline-none"
+                            style={{ background: "var(--surface-solid)", color: "var(--text)" }}
                         >
-                            <option value="ABOVE">Price rises above</option>
-                            <option value="BELOW">Price falls below</option>
+                            <option
+                                value="ABOVE"
+                                style={{ background: "var(--surface-solid)", color: "var(--text)" }}
+                            >
+                                Price rises above
+                            </option>
+                            <option
+                                value="BELOW"
+                                style={{ background: "var(--surface-solid)", color: "var(--text)" }}
+                            >
+                                Price falls below
+                            </option>
                         </select>
                         <input
                             type="number"
@@ -123,8 +126,7 @@ function Alerts() {
                     </div>
                     {error && <p className="text-sm text-red-400">{error}</p>}
                 </form>
-
-                <div className="surface rounded-2xl overflow-hidden">
+                <div className="surface rounded-2xl overflow-hidden relative z-0">
                     {alerts.length === 0 ? (
                         <p className="p-6 text-muted text-sm text-center">No alerts set.</p>
                     ) : (
@@ -159,5 +161,4 @@ function Alerts() {
         </div>
     );
 }
-
 export default Alerts;

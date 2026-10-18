@@ -11,14 +11,12 @@ import {
     fileToAvatarDataUrl,
     updateProfile,
 } from "../services/profileService";
-
 const EDITABLE_FIELDS = [
     { key: "fullName", label: "Full Name", type: "text" },
     { key: "phoneNumber", label: "Phone", type: "tel" },
     { key: "address", label: "Address", type: "text" },
     { key: "dateOfBirth", label: "Date of Birth", type: "date" },
 ];
-
 function blankForm(user) {
     return {
         fullName: user?.fullName || user?.name || "",
@@ -27,15 +25,12 @@ function blankForm(user) {
         dateOfBirth: user?.dateOfBirth || "",
     };
 }
-
 // Client-side profile validation mirroring the backend rules exactly.
 // Returns a map of { fieldKey: errorMessage } containing only failing fields.
 function validateProfile(form) {
     const e = {};
-
     if (form.phoneNumber && !/^\d{10}$/.test(form.phoneNumber))
         e.phoneNumber = "Phone number must be exactly 10 digits";
-
     if (form.dateOfBirth) {
         const d = new Date(form.dateOfBirth);
         const today = new Date();
@@ -52,32 +47,26 @@ function validateProfile(form) {
                     "You must be at least 18 years old (and born on/after 1 Jan 1900)";
         }
     }
-
     if (form.address) {
         const t = form.address.trim();
         if (!t || t.length > 200 || /[\u0000-\u001F\u007F]/.test(t))
             e.address =
                 "Address must be non-empty, ≤200 chars, and free of control characters";
     }
-
     return e;
 }
-
 function Profile() {
     const navigate = useNavigate();
     const fileRef = useRef(null);
-
     const [user, setUser] = useState(null);
     const [avatar, setAvatar] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-
     const [editing, setEditing] = useState(false);
     const [form, setForm] = useState(blankForm(null));
     const [fieldErrors, setFieldErrors] = useState({});
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState("");
-
     useEffect(() => {
         const load = async () => {
             try {
@@ -92,7 +81,6 @@ function Profile() {
         };
         load();
     }, [navigate]);
-
     const handleFile = async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -105,12 +93,10 @@ function Profile() {
             setError(err.message);
         }
     };
-
     const handleRemove = () => {
         removeAvatar(user.$id);
         setAvatar(null);
     };
-
     const startEdit = () => {
         setForm(blankForm(user));
         setError("");
@@ -118,18 +104,14 @@ function Profile() {
         setFieldErrors({});
         setEditing(true);
     };
-
     const cancelEdit = () => {
         setEditing(false);
         setForm(blankForm(user));
         setError("");
         setFieldErrors({});
     };
-
-    const handleField = (key) => (e) => {
-        const { value } = e.target;
-        setForm((prev) => ({ ...prev, [key]: value }));
-        // Clear this field's error as the user edits it.
+    // Clear a single field's error as the user edits it.
+    const clearFieldError = (key) => {
         setFieldErrors((prev) => {
             if (!prev[key]) return prev;
             const next = { ...prev };
@@ -137,7 +119,18 @@ function Profile() {
             return next;
         });
     };
-
+    const handleField = (key) => (e) => {
+        const { value } = e.target;
+        setForm((prev) => ({ ...prev, [key]: value }));
+        clearFieldError(key);
+    };
+    // Phone field is hardened so letters can't be typed: strip non-digits and
+    // cap at 10 characters before updating form state. Still clears its error.
+    const handlePhoneField = (e) => {
+        const cleaned = e.target.value.replace(/\D/g, "").slice(0, 10);
+        setForm((prev) => ({ ...prev, phoneNumber: cleaned }));
+        clearFieldError("phoneNumber");
+    };
     const handleSave = async () => {
         if (!form.fullName.trim()) {
             setError("Full name is required");
@@ -170,12 +163,10 @@ function Profile() {
             setSaving(false);
         }
     };
-
     const logout = async () => {
         await authService.logout();
         navigate("/");
     };
-
     if (loading) {
         return (
             <div className="min-h-screen app-bg flex items-center justify-center">
@@ -183,7 +174,6 @@ function Profile() {
             </div>
         );
     }
-
     const readOnlyFields = [
         { label: "Full Name", value: user?.fullName || user?.name },
         { label: "Email", value: user?.email },
@@ -192,11 +182,9 @@ function Profile() {
         { label: "Date of Birth", value: user?.dateOfBirth || "—" },
         { label: "Membership", value: user?.membershipStatus || "active" },
     ];
-
     return (
         <div className="min-h-screen app-bg">
             <NavBar user={{ ...user, avatarUrl: avatar }} onLogout={logout} live />
-
             <main className="max-w-4xl mx-auto px-6 py-8">
                 <button
                     onClick={() => navigate("/home")}
@@ -204,10 +192,8 @@ function Profile() {
                 >
                     <FaArrowLeft /> Back to dashboard
                 </button>
-
                 <div className="surface rounded-3xl overflow-hidden">
                     <div className="h-32 bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600" />
-
                     <div className="px-8 pb-8">
                         <div className="-mt-16 flex items-end gap-5">
                             <div className="relative">
@@ -222,7 +208,6 @@ function Profile() {
                                         <FaUserCircle className="text-6xl text-slate-400" />
                                     </div>
                                 )}
-
                                 <button
                                     onClick={() => fileRef.current?.click()}
                                     className="absolute -bottom-2 -right-2 h-10 w-10 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center shadow-lg"
@@ -238,14 +223,12 @@ function Profile() {
                                     className="hidden"
                                 />
                             </div>
-
                             <div className="pb-2">
                                 <h2 className="text-2xl font-bold">
                                     {user?.fullName || user?.name}
                                 </h2>
                                 <p className="text-muted text-sm">{user?.email}</p>
                             </div>
-
                             {avatar && (
                                 <button
                                     onClick={handleRemove}
@@ -255,14 +238,12 @@ function Profile() {
                                 </button>
                             )}
                         </div>
-
                         {error && (
                             <p className="mt-4 text-sm text-red-400">{error}</p>
                         )}
                         {success && (
                             <p className="mt-4 text-sm text-emerald-400">{success}</p>
                         )}
-
                         <div className="mt-8 flex items-center justify-between">
                             <h3 className="text-lg font-bold">Profile details</h3>
                             {!editing && (
@@ -274,7 +255,6 @@ function Profile() {
                                 </button>
                             )}
                         </div>
-
                         {editing ? (
                             <div className="mt-5">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -284,11 +264,21 @@ function Profile() {
                                                 {f.label}
                                             </span>
                                             <div className="mt-1.5">
-                                                <TextInput
-                                                    type={f.type}
-                                                    value={form[f.key]}
-                                                    onChange={handleField(f.key)}
-                                                />
+                                                {f.key === "phoneNumber" ? (
+                                                    <TextInput
+                                                        type={f.type}
+                                                        inputMode="numeric"
+                                                        maxLength={10}
+                                                        value={form[f.key]}
+                                                        onChange={handlePhoneField}
+                                                    />
+                                                ) : (
+                                                    <TextInput
+                                                        type={f.type}
+                                                        value={form[f.key]}
+                                                        onChange={handleField(f.key)}
+                                                    />
+                                                )}
                                             </div>
                                             {fieldErrors[f.key] && (
                                                 <span className="mt-1 block text-xs text-red-400">
@@ -304,7 +294,6 @@ function Profile() {
                                         </p>
                                     </div>
                                 </div>
-
                                 <div className="mt-6 flex gap-3">
                                     <button
                                         onClick={handleSave}
@@ -343,5 +332,4 @@ function Profile() {
         </div>
     );
 }
-
 export default Profile;
