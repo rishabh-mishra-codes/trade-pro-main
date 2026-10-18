@@ -10,13 +10,12 @@ import {
     FaThLarge,
     FaChartPie,
     FaFlask,
+    FaStar,
 } from "react-icons/fa";
 import ThemeToggle from "./ThemeToggle";
 import StockSearch from "./StockSearch";
-
 function NavBar({ user, onLogout, live, onPickStock }) {
     const navigate = useNavigate();
-
     return (
         <nav className="sticky top-0 z-50 border-b border-white/10 bg-(--bg)/80 backdrop-blur-lg">
             <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between gap-4">
@@ -39,12 +38,17 @@ function NavBar({ user, onLogout, live, onPickStock }) {
                         </p>
                     </div>
                 </div>
-
                 <div className="hidden md:block flex-1 max-w-sm">
                     <StockSearch onPick={onPickStock} />
                 </div>
-
                 <div className="flex items-center gap-3 sm:gap-4">
+                    <button
+                        onClick={() => navigate("/watchlist")}
+                        className="text-muted hover:text-current transition"
+                        title="Watchlist"
+                    >
+                        <FaStar />
+                    </button>
                     <button
                         onClick={() => navigate("/orders")}
                         className="hidden sm:inline text-muted hover:text-current transition text-sm"
@@ -52,7 +56,6 @@ function NavBar({ user, onLogout, live, onPickStock }) {
                     >
                         <FaListUl />
                     </button>
-
                     <button
                         onClick={() => navigate("/market")}
                         className="text-muted hover:text-current transition"
@@ -60,7 +63,6 @@ function NavBar({ user, onLogout, live, onPickStock }) {
                     >
                         <FaThLarge />
                     </button>
-
                     <button
                         onClick={() => navigate("/analysis")}
                         className="text-muted hover:text-current transition"
@@ -68,7 +70,6 @@ function NavBar({ user, onLogout, live, onPickStock }) {
                     >
                         <FaChartPie />
                     </button>
-
                     <button
                         onClick={() => navigate("/paper")}
                         className="relative text-muted hover:text-current transition"
@@ -79,7 +80,6 @@ function NavBar({ user, onLogout, live, onPickStock }) {
                             PAPER
                         </span>
                     </button>
-
                     <button
                         onClick={() => navigate("/emi")}
                         className="text-muted hover:text-current transition"
@@ -87,9 +87,7 @@ function NavBar({ user, onLogout, live, onPickStock }) {
                     >
                         <FaCalculator />
                     </button>
-
                     <ThemeToggle />
-
                     <button
                         onClick={() => navigate("/alerts")}
                         className="text-muted hover:text-current transition"
@@ -97,7 +95,6 @@ function NavBar({ user, onLogout, live, onPickStock }) {
                     >
                         <FaBell />
                     </button>
-
                     <button
                         onClick={() => navigate("/profile")}
                         className="flex items-center gap-2 hover:opacity-80 transition"
@@ -116,7 +113,6 @@ function NavBar({ user, onLogout, live, onPickStock }) {
                             {user?.fullName || user?.name || "Trader"}
                         </span>
                     </button>
-
                     <button
                         onClick={onLogout}
                         className="text-muted hover:text-red-400 transition"
@@ -129,5 +125,4 @@ function NavBar({ user, onLogout, live, onPickStock }) {
         </nav>
     );
 }
-
 export default memo(NavBar);
