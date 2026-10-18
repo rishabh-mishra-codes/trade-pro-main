@@ -8,6 +8,7 @@ import { getOrders } from "../services/orderService";
 import { getQuotesFor } from "../services/indianStockService";
 import { getAvatar } from "../services/profileService";
 import NavBar from "../components/NavBar";
+import AllocationDonut from "../components/AllocationDonut";
 
 const fmt = (v) =>
     Number(v || 0).toLocaleString("en-IN", {
@@ -269,6 +270,16 @@ function PortfolioAnalysis() {
                                 title="Worst Performer"
                                 holding={analysis.worst}
                             />
+                        </section>
+
+                        {/* Allocation donut */}
+                        <section className="mt-8">
+                            <h2 className="text-lg font-bold mb-3">
+                                Allocation Breakdown
+                            </h2>
+                            <div className="surface rounded-2xl p-5">
+                                <AllocationDonut allocation={analysis.allocation} />
+                            </div>
                         </section>
 
                         {/* Allocation bars */}

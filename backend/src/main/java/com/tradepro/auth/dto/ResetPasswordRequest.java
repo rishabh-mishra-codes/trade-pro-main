@@ -1,21 +1,38 @@
 package com.tradepro.auth.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 public class ResetPasswordRequest {
 
     @NotBlank
-    private String token;
+    @Email
+    private String email;
 
     @NotBlank
+    @Pattern(regexp = "\\d{6}", message = "The code must be 6 digits")
+    private String code;
+
+    @NotBlank
+    @Size(min = 8, message = "Password must be at least 8 characters")
     private String newPassword;
 
-    public String getToken() {
-        return token;
+    public String getEmail() {
+        return email;
     }
 
-    public void setToken(String token) {
-        this.token = token;
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public String getNewPassword() {

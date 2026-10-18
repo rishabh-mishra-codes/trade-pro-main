@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaArrowLeft, FaTimes } from "react-icons/fa";
+import { FaArrowLeft, FaTimes, FaDownload } from "react-icons/fa";
 import authService from "../services/authService";
-import { getOrders, cancelOrder } from "../services/orderService";
+import {
+    getOrders,
+    cancelOrder,
+    downloadOrderHistoryPdf,
+} from "../services/orderService";
 import NavBar from "../components/NavBar";
 import { getAvatar } from "../services/profileService";
 
@@ -17,6 +21,8 @@ function Orders() {
     const [user, setUser] = useState(null);
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [downloading, setDownloading] = useState(false);
+    const [dlError, setDlError] = useState("");
 
     const load = useCallback(async () => {
         try {
@@ -47,6 +53,26 @@ function Orders() {
             await load();
         } catch {
             /* ignore */
+        }
+    };
+
+    const handleDownload = async () => {
+        setDownloading(true);
+        setDlError("");
+        try {
+            const blob = await downloadOrderHistoryPdf();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "tradepro-orders.pdf";
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            setDlError(e.message || "Could not download PDF");
+        } finally {
+            setDownloading(false);
         }
     };
 
@@ -81,7 +107,24 @@ function Orders() {
                     <FaArrowLeft /> Back to dashboard
                 </button>
 
-                <h1 className="text-2xl font-bold mb-5">Order History</h1>
+                <div className="flex items-center justify-between gap-4 mb-5">
+                    <h1 className="text-2xl font-bold">Order History</h1>
+                    <div className="flex flex-col items-end gap-1">
+                        <button
+                            onClick={handleDownload}
+                            disabled={downloading}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed transition"
+                        >
+                            <FaDownload />
+                            {downloading ? "Preparing…" : "Download PDF"}
+                        </button>
+                        {dlError ? (
+                            <p className="text-xs text-red-400">{dlError}</p>
+                        ) : (
+                            <p className="text-xs text-muted">Also emailed to you</p>
+                        )}
+                    </div>
+                </div>
 
                 <div className="surface rounded-2xl overflow-hidden">
                     {orders.length === 0 ? (

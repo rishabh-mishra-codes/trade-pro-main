@@ -28,6 +28,41 @@ function blankForm(user) {
     };
 }
 
+// Client-side profile validation mirroring the backend rules exactly.
+// Returns a map of { fieldKey: errorMessage } containing only failing fields.
+function validateProfile(form) {
+    const e = {};
+
+    if (form.phoneNumber && !/^\d{10}$/.test(form.phoneNumber))
+        e.phoneNumber = "Phone number must be exactly 10 digits";
+
+    if (form.dateOfBirth) {
+        const d = new Date(form.dateOfBirth);
+        const today = new Date();
+        if (Number.isNaN(d.getTime())) {
+            e.dateOfBirth = "Date of birth is not a valid date";
+        } else if (d > today) {
+            e.dateOfBirth = "Date of birth cannot be in the future";
+        } else {
+            let age = today.getFullYear() - d.getFullYear();
+            const m = today.getMonth() - d.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < d.getDate())) age--;
+            if (d < new Date("1900-01-01") || age < 18)
+                e.dateOfBirth =
+                    "You must be at least 18 years old (and born on/after 1 Jan 1900)";
+        }
+    }
+
+    if (form.address) {
+        const t = form.address.trim();
+        if (!t || t.length > 200 || /[\u0000-\u001F\u007F]/.test(t))
+            e.address =
+                "Address must be non-empty, ≤200 chars, and free of control characters";
+    }
+
+    return e;
+}
+
 function Profile() {
     const navigate = useNavigate();
     const fileRef = useRef(null);
@@ -39,6 +74,7 @@ function Profile() {
 
     const [editing, setEditing] = useState(false);
     const [form, setForm] = useState(blankForm(null));
+    const [fieldErrors, setFieldErrors] = useState({});
     const [saving, setSaving] = useState(false);
     const [success, setSuccess] = useState("");
 
@@ -79,6 +115,7 @@ function Profile() {
         setForm(blankForm(user));
         setError("");
         setSuccess("");
+        setFieldErrors({});
         setEditing(true);
     };
 
@@ -86,16 +123,34 @@ function Profile() {
         setEditing(false);
         setForm(blankForm(user));
         setError("");
+        setFieldErrors({});
     };
 
-    const handleField = (key) => (e) =>
-        setForm((prev) => ({ ...prev, [key]: e.target.value }));
+    const handleField = (key) => (e) => {
+        const { value } = e.target;
+        setForm((prev) => ({ ...prev, [key]: value }));
+        // Clear this field's error as the user edits it.
+        setFieldErrors((prev) => {
+            if (!prev[key]) return prev;
+            const next = { ...prev };
+            delete next[key];
+            return next;
+        });
+    };
 
     const handleSave = async () => {
         if (!form.fullName.trim()) {
             setError("Full name is required");
             return;
         }
+        // Validate all fields against the backend rules. Block the request when
+        // any error is present (R4.9); only send when every field passes (R4.10).
+        const errors = validateProfile(form);
+        if (Object.keys(errors).length > 0) {
+            setFieldErrors(errors);
+            return;
+        }
+        setFieldErrors({});
         setSaving(true);
         setError("");
         setSuccess("");
@@ -235,6 +290,11 @@ function Profile() {
                                                     onChange={handleField(f.key)}
                                                 />
                                             </div>
+                                            {fieldErrors[f.key] && (
+                                                <span className="mt-1 block text-xs text-red-400">
+                                                    {fieldErrors[f.key]}
+                                                </span>
+                                            )}
                                         </label>
                                     ))}
                                     <div className="block">

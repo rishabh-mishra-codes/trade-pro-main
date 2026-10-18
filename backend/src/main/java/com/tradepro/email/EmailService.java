@@ -5,7 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+
+import jakarta.mail.internet.MimeMessage;
 
 @Service
 public class EmailService {
@@ -50,6 +53,29 @@ public class EmailService {
             log.info("Password reset email sent to {}", to);
         } catch (Exception ex) {
             log.error("Failed to send password reset email to {}: {}", to, ex.getMessage());
+        }
+    }
+
+    public void sendPasswordResetOtp(String to, String otp) {
+        String body = "Your TradePro password reset code is: " + otp + "\n\n"
+                + "Enter this 6-digit code in the app to set a new password.\n"
+                + "The code expires in 10 minutes. If you didn't request this, ignore this email.";
+
+        if (!mailEnabled) {
+            log.info("[EMAIL DISABLED] Password reset OTP for {} -> {}", to, otp);
+            return;
+        }
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(from);
+            message.setTo(to);
+            message.setSubject("Your TradePro password reset code");
+            message.setText(body);
+            mailSender.send(message);
+            log.info("Password reset OTP email sent to {}", to);
+        } catch (Exception ex) {
+            log.error("Failed to send OTP email to {}: {}", to, ex.getMessage());
         }
     }
 
@@ -104,6 +130,29 @@ public class EmailService {
             log.info("Funds-added email sent to {}", to);
         } catch (Exception ex) {
             log.error("Failed to send funds-added email to {}: {}", to, ex.getMessage());
+        }
+    }
+
+    public void sendOrderHistory(String to, byte[] pdf) {
+        if (!mailEnabled) {
+            log.info("[EMAIL DISABLED] Order history PDF for {} ({} bytes)", to, pdf.length);
+            return;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            helper.setFrom(from);
+            helper.setTo(to);
+            helper.setSubject("Your TradePro order history");
+            helper.setText("Attached is your TradePro order history as a PDF.");
+            helper.addAttachment("tradepro-orders.pdf",
+                    new org.springframework.core.io.ByteArrayResource(pdf),
+                    "application/pdf");
+            mailSender.send(message);
+            log.info("Order-history email sent to {}", to);
+        } catch (Exception ex) {
+            log.error("Failed to send order-history email to {}: {}", to, ex.getMessage());
         }
     }
 }
