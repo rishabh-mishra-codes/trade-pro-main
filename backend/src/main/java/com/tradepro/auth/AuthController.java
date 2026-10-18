@@ -7,7 +7,6 @@ import com.tradepro.auth.dto.RegisterRequest;
 import com.tradepro.auth.dto.ResetPasswordRequest;
 import com.tradepro.auth.dto.UserResponse;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -24,9 +22,6 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
-
-    @Value("${app.expose-reset-token:true}")
-    private boolean exposeResetToken;
 
     public AuthController(AuthService authService) {
         this.authService = authService;
@@ -53,23 +48,18 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ResponseEntity<Map<String, String>> forgotPassword(
             @Valid @RequestBody ForgotPasswordRequest request) {
-        String token = authService.createPasswordResetToken(request.getEmail());
-
-        Map<String, String> body = new HashMap<>();
-        body.put("message",
-                "If that email exists, a password reset token has been generated.");
-        // For dev/testing without email set up, return the token so the reset
-        // flow can be completed. Disable by setting app.expose-reset-token=false.
-        if (exposeResetToken && token != null) {
-            body.put("resetToken", token);
-        }
-        return ResponseEntity.ok(body);
+        authService.createPasswordResetOtp(request.getEmail());
+        // The response contains ONLY a generic acknowledgement — never the code.
+        // The 6-digit OTP is emailed to the registered address by AuthService.
+        return ResponseEntity.ok(Map.of(
+                "message", "If that email exists, a reset code has been sent."));
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<Map<String, String>> resetPassword(
             @Valid @RequestBody ResetPasswordRequest request) {
-        authService.resetPassword(request.getToken(), request.getNewPassword());
+        authService.resetPassword(
+                request.getEmail(), request.getCode(), request.getNewPassword());
         return ResponseEntity.ok(Map.of("message", "Password has been reset"));
     }
 }

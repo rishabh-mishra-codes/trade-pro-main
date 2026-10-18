@@ -7,7 +7,6 @@ import {
     FaPlus,
     FaMinus,
     FaChartLine,
-    FaTrash,
 } from "react-icons/fa";
 
 import { getQuotesFor, INDIAN_STOCKS } from "../services/indianStockService";
@@ -32,6 +31,7 @@ import { useTheme } from "../context/ThemeContext";
 
 import NavBar from "../components/NavBar";
 import TopTicker from "../components/TopTicker";
+import WatchlistSection from "../components/WatchlistSection";
 import StockChart from "../components/StockChart";
 import TradeModal from "../components/TradeModal";
 import AddFundsModal from "../components/AddFundsModal";
@@ -42,9 +42,6 @@ const fmt = (v) =>
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     });
-
-// "1 stock" / "2 stocks" — correct singular/plural wording for a count.
-const pluralize = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
 // Market indices / bellwethers shown in the top ticker. NIFTY maps to ^NSEI
 // server-side; the rest are bare NSE tickers.
@@ -391,65 +388,78 @@ function Home() {
                 onPickStock={handleAddStock}
             />
 
-            {/* Ticker */}
-            <div className="border-b border-white/10 bg-black/10">
-                <div className="max-w-7xl mx-auto px-6 py-2.5 flex gap-8 overflow-x-auto items-center">
-                    <span
-                        className={`text-xs font-bold whitespace-nowrap ${
-                            live
-                                ? "text-emerald-400"
-                                : marketStatus === "error"
-                                ? "text-red-400"
-                                : "text-muted"
-                        }`}
-                    >
-                        {live
-                            ? "● LIVE"
-                            : marketStatus === "error"
-                            ? "○ OFFLINE"
-                            : "○ CONNECTING"}
-                    </span>
-                    {indices.map((m) => (
-                        <div key={m.symbol} className="flex items-center gap-2 whitespace-nowrap">
-                            <span className="text-sm text-muted">{m.name}</span>
-                            <span className="font-semibold text-sm">₹{m.value}</span>
+            <main className="max-w-7xl mx-auto px-6 py-8">
+                {/* Dashboard header (R5.6): a single titled block that groups the
+                    page title, the LIVE/OFFLINE indicator, the index ticker strip,
+                    and the "Updated HH:MM" status — instead of those pieces being
+                    scattered across separate bars. Data sources/polling unchanged. */}
+                <header className="surface rounded-2xl mb-8 p-5">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-2xl font-extrabold tracking-tight">
+                                Dashboard
+                            </h1>
                             <span
-                                className={`text-xs ${
-                                    m.positive ? "text-emerald-400" : "text-red-400"
+                                className={`text-xs font-bold whitespace-nowrap ${
+                                    live
+                                        ? "text-emerald-400"
+                                        : marketStatus === "error"
+                                        ? "text-red-400"
+                                        : "text-muted"
                                 }`}
                             >
-                                {m.percentage}
+                                {live
+                                    ? "● LIVE"
+                                    : marketStatus === "error"
+                                    ? "○ OFFLINE"
+                                    : "○ CONNECTING"}
                             </span>
                         </div>
-                    ))}
-                </div>
-            </div>
 
-            <main className="max-w-7xl mx-auto px-6 py-8">
-                {/* Market-data status strip: error + Retry, or last-updated time. */}
-                <div className="mb-4 flex items-center justify-between gap-3 text-sm">
-                    <div>
-                        {marketStatus === "error" ? (
-                            <span className="text-red-400">
-                                {marketError || "Failed to load market data"}
-                            </span>
-                        ) : marketStatus === "loaded" && lastUpdated ? (
-                            <span className="text-muted">
-                                Updated {lastUpdated.toLocaleTimeString("en-IN")}
-                            </span>
-                        ) : marketStatus === "loading" ? (
-                            <span className="text-muted">Updating…</span>
-                        ) : null}
+                        {/* Last-updated / error + Retry status, grouped in the header. */}
+                        <div className="flex items-center gap-3 text-sm">
+                            {marketStatus === "error" ? (
+                                <span className="text-red-400">
+                                    {marketError || "Failed to load market data"}
+                                </span>
+                            ) : marketStatus === "loaded" && lastUpdated ? (
+                                <span className="text-muted">
+                                    Updated {lastUpdated.toLocaleTimeString("en-IN")}
+                                </span>
+                            ) : marketStatus === "loading" ? (
+                                <span className="text-muted">Updating…</span>
+                            ) : null}
+                            {marketStatus === "error" && (
+                                <button
+                                    onClick={refreshMarket}
+                                    className="px-4 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold"
+                                >
+                                    Retry
+                                </button>
+                            )}
+                        </div>
                     </div>
-                    {marketStatus === "error" && (
-                        <button
-                            onClick={refreshMarket}
-                            className="px-4 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold"
-                        >
-                            Retry
-                        </button>
-                    )}
-                </div>
+
+                    {/* Index ticker strip, now inside the dashboard header block. */}
+                    <div className="mt-4 flex gap-8 overflow-x-auto items-center border-t border-white/10 pt-3">
+                        {indices.map((m) => (
+                            <div
+                                key={m.symbol}
+                                className="flex items-center gap-2 whitespace-nowrap"
+                            >
+                                <span className="text-sm text-muted">{m.name}</span>
+                                <span className="font-semibold text-sm">₹{m.value}</span>
+                                <span
+                                    className={`text-xs ${
+                                        m.positive ? "text-emerald-400" : "text-red-400"
+                                    }`}
+                                >
+                                    {m.percentage}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </header>
 
                 {/* Portfolio summary cards. P&L is split into three distinct,
                     labeled measures: Open (unrealized) from live holdings, Realized
@@ -575,40 +585,18 @@ function Home() {
                         )}
                     </div>
 
-                    {/* Watchlist */}
+                    {/* Watchlist: dedicated, distinctly-delineated panel next to
+                        the chart (R5.1). Presentational component owns its own
+                        header/count; state + handlers stay here in Home. */}
                     <div>
-                        <div className="flex items-center justify-between mb-3">
-                            <h2 className="text-lg font-bold">Watchlist</h2>
-                            <span className="text-xs text-muted">
-                                {pluralize(watchStocks.length, "stock")}
-                            </span>
-                        </div>
-                        <div className="surface rounded-2xl overflow-hidden">
-                            {/* Render one row per SAVED symbol so a saved stock never
-                                disappears when its quote is slow or unavailable. The
-                                empty-state shows only when the saved list is truly empty. */}
-                            {watchStocks.length === 0 ? (
-                                <p className="p-5 text-muted text-sm">
-                                    Search above to add stocks.
-                                </p>
-                            ) : (
-                                watchStocks.map((saved) => {
-                                    const quote = quoteBySymbol.get(saved.symbol);
-                                    return (
-                                        <WatchRow
-                                            key={saved.symbol}
-                                            symbol={saved.symbol}
-                                            name={quote?.name || saved.name}
-                                            quote={quote}
-                                            marketStatus={marketStatus}
-                                            selected={selectedSymbol === saved.symbol}
-                                            onSelect={setSelectedSymbol}
-                                            onRemove={handleRemoveStock}
-                                        />
-                                    );
-                                })
-                            )}
-                        </div>
+                        <WatchlistSection
+                            watchStocks={watchStocks}
+                            quoteBySymbol={quoteBySymbol}
+                            marketStatus={marketStatus}
+                            selectedSymbol={selectedSymbol}
+                            onSelect={setSelectedSymbol}
+                            onRemove={handleRemoveStock}
+                        />
                     </div>
                 </section>
 
@@ -724,66 +712,6 @@ function Home() {
         </div>
     );
 }
-
-const WatchRow = memo(function WatchRow({
-    symbol,
-    name,
-    quote,
-    marketStatus,
-    selected,
-    onSelect,
-    onRemove,
-}) {
-    // A quote with a real (non-zero) price is resolved; otherwise the price is
-    // either still loading or genuinely unavailable (Yahoo returned nothing).
-    const hasPrice = quote && Number(quote.rawPrice) > 0;
-    const loadingPrice = !quote && marketStatus === "loading";
-
-    return (
-        <div
-            className={`group flex items-center justify-between p-4 border-b border-white/5 hover:bg-white/5 transition ${
-                selected ? "bg-white/5" : ""
-            }`}
-        >
-            <button onClick={() => onSelect(symbol)} className="flex-1 text-left">
-                <p className="font-semibold text-sm">{name}</p>
-                <p className="text-xs text-muted">{symbol}</p>
-            </button>
-            <div className="flex items-center gap-3">
-                <div className="text-right">
-                    {hasPrice ? (
-                        <>
-                            <p className="font-semibold text-sm">₹{quote.price}</p>
-                            <p
-                                className={`text-xs ${
-                                    quote.positive ? "text-emerald-400" : "text-red-400"
-                                }`}
-                            >
-                                {quote.percentage}
-                            </p>
-                        </>
-                    ) : (
-                        <>
-                            <p className="font-semibold text-sm text-muted">
-                                {loadingPrice ? "…" : "—"}
-                            </p>
-                            <p className="text-xs text-muted">
-                                {loadingPrice ? "loading" : "unavailable"}
-                            </p>
-                        </>
-                    )}
-                </div>
-                <button
-                    onClick={() => onRemove(symbol)}
-                    className="opacity-60 sm:opacity-0 group-hover:opacity-100 text-muted hover:text-red-400 transition"
-                    title="Remove"
-                >
-                    <FaTrash size={11} />
-                </button>
-            </div>
-        </div>
-    );
-});
 
 const SummaryCard = memo(function SummaryCard({ label, value, sub, icon, accent, action, valueClass }) {
     return (

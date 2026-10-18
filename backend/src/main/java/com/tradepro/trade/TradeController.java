@@ -1,5 +1,15 @@
 package com.tradepro.trade;
 
+import com.tradepro.auth.AuthException;
+import com.tradepro.auth.dto.UserResponse;
+import com.tradepro.email.EmailService;
+import com.tradepro.user.UserAccount;
+import com.tradepro.user.UserAccountRepository;
+
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +23,18 @@ import java.util.UUID;
 public class TradeController {
 
     private final TradeService tradeService;
+    private final OrderHistoryPdfService pdfService;
+    private final EmailService emailService;
+    private final UserAccountRepository userRepository;
 
-    public TradeController(TradeService tradeService) {
+    public TradeController(TradeService tradeService,
+                           OrderHistoryPdfService pdfService,
+                           EmailService emailService,
+                           UserAccountRepository userRepository) {
         this.tradeService = tradeService;
+        this.pdfService = pdfService;
+        this.emailService = emailService;
+        this.userRepository = userRepository;
     }
 
     public record TradeRequest(String symbol, String name, double price, int qty) {}
@@ -34,6 +53,21 @@ public class TradeController {
     @GetMapping("/orders")
     public ResponseEntity<List<OrderRecord>> orders(Authentication auth) {
         return ResponseEntity.ok(tradeService.getOrders(UUID.fromString(auth.getName())));
+    }
+
+    @GetMapping("/orders/history/pdf")
+    public ResponseEntity<byte[]> orderHistoryPdf(Authentication auth) {
+        UUID userId = UUID.fromString(auth.getName());
+        UserAccount user = userRepository.findById(userId)
+                .orElseThrow(() -> new AuthException("User not found"));
+        List<OrderRecord> orders = tradeService.getOrders(userId);
+        byte[] pdf = pdfService.build(UserResponse.from(user), orders);
+        emailService.sendOrderHistory(user.getEmail(), pdf);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(
+                ContentDisposition.attachment().filename("tradepro-orders.pdf").build());
+        return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
     }
 
     @PostMapping("/orders/limit")

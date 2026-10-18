@@ -1,4 +1,4 @@
-import { api } from "./apiClient";
+import { api, apiBlob } from "./apiClient";
 
 export function getOrders() {
     return api("/orders");
@@ -13,4 +13,8 @@ export function placeLimitOrder({ symbol, name, side, price, qty }) {
 
 export function cancelOrder(id) {
     return api(`/orders/${id}`, { method: "DELETE" });
+}
+
+export function downloadOrderHistoryPdf() {
+    return apiBlob("/orders/history/pdf");
 }

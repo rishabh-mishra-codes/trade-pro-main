@@ -87,6 +87,19 @@ body {
     border: 1px solid var(--border);
 }
 
+/* Opaque floating overlay for dropdowns / popovers / menus.
+   Uses the solid surface token so the page never shows through. */
+.overlay-surface {
+    background: var(--surface-solid);
+    color: var(--text);
+    border: 1px solid var(--border-strong);
+    box-shadow: var(--shadow-lg);
+    /* deliberately NO backdrop-filter / transparency */
+}
+.overlay-surface .hover-row:hover {
+    background: var(--surface-hover);
+}
+
 .elevated {
     box-shadow: var(--shadow-lg);
 }

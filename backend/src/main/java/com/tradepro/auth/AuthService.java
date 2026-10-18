@@ -11,6 +11,8 @@ import com.tradepro.email.EmailService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
@@ -69,38 +71,46 @@ public class AuthService {
         return UserResponse.from(account);
     }
 
-    // Generates a reset token. Returns the token so it can be emailed (or, in
-    // dev, returned to the client). Does not reveal whether the email exists.
-    public String createPasswordResetToken(String email) {
-        return repository.findByEmailIgnoreCase(email)
-                .map(account -> {
-                    String token = UUID.randomUUID().toString().replace("-", "");
-                    account.setResetToken(token);
-                    account.setResetTokenExpiry(
-                            java.time.Instant.now().plusSeconds(3600));
-                    repository.save(account);
-                    emailService.sendPasswordReset(account.getEmail(), token);
-                    return token;
-                })
-                .orElse(null);
+    // Generates a 6-digit OTP, stores its BCrypt hash with a 10-minute expiry,
+    // and emails the raw code. The OTP is never surfaced to the caller. Unknown
+    // emails are a silent no-op so account existence is not revealed.
+    public void createPasswordResetOtp(String email) {
+        repository.findByEmailIgnoreCase(email).ifPresent(account -> {
+            String otp = generateOtp();
+            account.setResetToken(passwordEncoder.encode(otp)); // store HASH of the OTP
+            account.setResetTokenExpiry(Instant.now().plusSeconds(600)); // 10 minutes
+            repository.save(account);
+            emailService.sendPasswordResetOtp(account.getEmail(), otp);
+        });
+        // unknown email -> no-op
     }
 
-    public void resetPassword(String token, String newPassword) {
+    public void resetPassword(String email, String code, String newPassword) {
         if (newPassword == null || newPassword.length() < 8) {
             throw new AuthException("Password must be at least 8 characters");
         }
-        UserAccount account = repository.findByResetToken(token)
-                .orElseThrow(() -> new AuthException("Invalid or expired reset token"));
+        UserAccount account = repository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new AuthException("Invalid or expired code"));
 
         if (account.getResetTokenExpiry() == null
-                || account.getResetTokenExpiry().isBefore(java.time.Instant.now())) {
-            throw new AuthException("Invalid or expired reset token");
+                || account.getResetTokenExpiry().isBefore(Instant.now())) {
+            throw new AuthException("Invalid or expired code");
+        }
+        if (account.getResetToken() == null
+                || !passwordEncoder.matches(code, account.getResetToken())) {
+            throw new AuthException("Invalid or expired code");
         }
 
         account.setPasswordHash(passwordEncoder.encode(newPassword));
         account.setResetToken(null);
         account.setResetTokenExpiry(null);
         repository.save(account);
+    }
+
+    // 6-digit OTP with preserved leading zeros (always length 6, digits only).
+    private String generateOtp() {
+        int n = new SecureRandom().nextInt(1_000_000); // 0..999999
+        return String.format("%06d", n);
     }
 
     private AuthResponse buildResponse(UserAccount account) {
