@@ -138,9 +138,9 @@ public class ChatService {
            .append("stock trading app for Indian (NSE) markets. Answer ONLY using the ")
            .append("portfolio data and live prices provided below. If asked something ")
            .append("outside this data or for financial advice, say you can share data ")
-           .append("but cannot give investment advice. Use Ôé╣ for money. Keep answers short.\n\n");
+           .append("but cannot give investment advice. Use ₹ for money. Keep answers short.\n\n");
         ctx.append("=== USER PORTFOLIO ===\n");
-        ctx.append(String.format(Locale.ENGLISH, "Available cash: Ôé╣%,.2f%n", wallet));
+        ctx.append(String.format(Locale.ENGLISH, "Available cash: ₹%,.2f%n", wallet));
         if (holdings.isEmpty()) {
             ctx.append("Holdings: none yet.\n");
         } else {
@@ -154,21 +154,21 @@ public class ChatService {
                 totalValue += value;
                 totalInvested += invested;
                 ctx.append(String.format(Locale.ENGLISH,
-                        "- %s (%s): qty %d, avg Ôé╣%,.2f, LTP Ôé╣%,.2f, value Ôé╣%,.2f, P&L Ôé╣%,.2f%n",
+                        "- %s (%s): qty %d, avg ₹%,.2f, LTP ₹%,.2f, value ₹%,.2f, P&L ₹%,.2f%n",
                         h.getName(), h.getSymbol(), h.getQuantity(),
                         h.getAvgPrice(), last, value, pnl));
             }
             double totalPnl = totalValue - totalInvested;
             ctx.append(String.format(Locale.ENGLISH,
-                    "Total holdings value: Ôé╣%,.2f | Invested: Ôé╣%,.2f | Total P&L: Ôé╣%,.2f%n",
+                    "Total holdings value: ₹%,.2f | Invested: ₹%,.2f | Total P&L: ₹%,.2f%n",
                     totalValue, totalInvested, totalPnl));
             ctx.append(String.format(Locale.ENGLISH,
-                    "Total portfolio (cash + holdings): Ôé╣%,.2f%n", wallet + totalValue));
+                    "Total portfolio (cash + holdings): ₹%,.2f%n", wallet + totalValue));
         }
         if (!prices.isEmpty()) {
             ctx.append("\nLive prices:\n");
             prices.forEach((sym, p) ->
-                    ctx.append(String.format(Locale.ENGLISH, "- %s: Ôé╣%,.2f%n", sym, p)));
+                    ctx.append(String.format(Locale.ENGLISH, "- %s: ₹%,.2f%n", sym, p)));
         } else {
             ctx.append("\n(Live prices are currently unavailable.)\n");
         }

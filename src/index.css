@@ -1,11 +1,8 @@
 @import "tailwindcss";
-
 /* Enable class-based dark mode (Tailwind v4) so our toggle controls it */
 @custom-variant dark (&:where(.dark, .dark *));
-
 :root {
     color-scheme: light dark;
-
     /* ---- Light theme tokens ---- */
     --bg: #eef1f6;
     --bg-grad-1: #f6f8fc;
@@ -24,7 +21,6 @@
     --shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
     --shadow-lg: 0 20px 50px rgba(15, 23, 42, 0.14);
 }
-
 :root[data-theme="dark"] {
     /* ---- Dark theme tokens (deep navy, not pure black) ---- */
     --bg: #070b14;
@@ -44,15 +40,12 @@
     --shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
     --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.55);
 }
-
 * {
     box-sizing: border-box;
 }
-
 html {
     scroll-behavior: smooth;
 }
-
 body {
     margin: 0;
     padding: 0;
@@ -68,12 +61,10 @@ body {
     min-height: 100vh;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
-
 /* Themed surface with subtle glass + border */
 .app-bg {
     color: var(--text);
 }
-
 .surface {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -81,41 +72,39 @@ body {
     -webkit-backdrop-filter: blur(12px);
     box-shadow: var(--shadow);
 }
-
 .surface-solid {
     background: var(--surface-solid);
     border: 1px solid var(--border);
 }
-
 /* Opaque floating overlay for dropdowns / popovers / menus.
    Uses the solid surface token so the page never shows through. */
 .overlay-surface {
     background: var(--surface-solid);
+    background-color: var(--surface-solid); /* explicit opaque fallback */
     color: var(--text);
     border: 1px solid var(--border-strong);
     box-shadow: var(--shadow-lg);
-    /* deliberately NO backdrop-filter / transparency */
+    backdrop-filter: none;      /* ensure no blur/transparency inherited */
+    -webkit-backdrop-filter: none;
+    opacity: 1;                 /* ensure fully opaque */
 }
+:root[data-theme="dark"] .overlay-surface { background: #141c2e; background-color: #141c2e; }
+:root[data-theme="light"] .overlay-surface { background: #ffffff; background-color: #ffffff; }
 .overlay-surface .hover-row:hover {
     background: var(--surface-hover);
 }
-
 .elevated {
     box-shadow: var(--shadow-lg);
 }
-
 .hairline {
     border-color: var(--border) !important;
 }
-
 .text-muted {
     color: var(--text-muted);
 }
-
 .hover-surface:hover {
     background: var(--surface-hover);
 }
-
 /* Gradient text for headings/branding */
 .text-gradient {
     background: linear-gradient(135deg, #818cf8, #a855f7 60%, #ec4899);
@@ -123,7 +112,6 @@ body {
     background-clip: text;
     color: transparent;
 }
-
 /* Subtle card hover lift */
 .card-hover {
     transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
@@ -133,7 +121,6 @@ body {
     box-shadow: var(--shadow-lg);
     border-color: var(--border-strong);
 }
-
 /* Refined scrollbars */
 ::-webkit-scrollbar {
     width: 10px;
@@ -152,7 +139,6 @@ body {
     background: color-mix(in srgb, var(--text-muted) 55%, transparent);
     background-clip: padding-box;
 }
-
 /* Entrance animation utility */
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(8px); }
@@ -161,7 +147,6 @@ body {
 .animate-in {
     animation: fadeInUp 0.4s ease both;
 }
-
 /* Top marquee ticker */
 @keyframes ticker-scroll {
     from { transform: translateX(0); }
@@ -177,7 +162,6 @@ body {
         animation: none;
     }
 }
-
 /* Shimmer skeleton for loading states */
 @keyframes shimmer {
     0% { background-position: -400px 0; }
