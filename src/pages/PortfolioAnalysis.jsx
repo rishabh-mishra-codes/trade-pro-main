@@ -13,7 +13,7 @@ const fmt = (v) =>
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     });
-const signed = (v) => `${v >= 0 ? "+" : "-"}Ôé╣${fmt(Math.abs(v))}`;
+const signed = (v) => `${v >= 0 ? "+" : "-"}₹${fmt(Math.abs(v))}`;
 // Same distinct hues as AllocationDonut so the horizontal allocation bars
 // visually match the donut segments (index-aligned per allocation row).
 const PALETTE = [
@@ -216,11 +216,11 @@ function PortfolioAnalysis() {
                         <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <StatCard
                                 label="Invested"
-                                value={`Ôé╣${fmt(analysis.investedTotal)}`}
+                                value={`₹${fmt(analysis.investedTotal)}`}
                             />
                             <StatCard
                                 label="Current Value"
-                                value={`Ôé╣${fmt(analysis.currentTotal)}`}
+                                value={`₹${fmt(analysis.currentTotal)}`}
                             />
                             <StatCard
                                 label="Unrealized P&L"
@@ -286,7 +286,7 @@ function PortfolioAnalysis() {
                                                 </span>
                                             </span>
                                             <span className="text-muted">
-                                                {a.percent.toFixed(1)}% ┬À Ôé╣{fmt(a.currentValue)}
+                                                {a.percent.toFixed(1)}% · ₹{fmt(a.currentValue)}
                                             </span>
                                         </div>
                                         <div className="h-2.5 rounded-full bg-white/10 overflow-hidden">
@@ -332,13 +332,13 @@ function PortfolioAnalysis() {
                                                     </td>
                                                     <td className="text-right p-4">{h.qty}</td>
                                                     <td className="text-right p-4">
-                                                        Ôé╣{fmt(h.avgPrice)}
+                                                        ₹{fmt(h.avgPrice)}
                                                     </td>
                                                     <td className="text-right p-4">
-                                                        Ôé╣{fmt(h.last)}
+                                                        ₹{fmt(h.last)}
                                                     </td>
                                                     <td className="text-right p-4">
-                                                        Ôé╣{fmt(h.currentValue)}
+                                                        ₹{fmt(h.currentValue)}
                                                     </td>
                                                     <td
                                                         className={`text-right p-4 ${
@@ -383,7 +383,7 @@ function MoverCard({ title, holding, positive, pricesLoaded }) {
             <div className="surface rounded-2xl p-5">
                 <p className="text-sm text-muted font-medium">{title}</p>
                 <p className="text-muted text-sm mt-2">
-                    {pricesLoaded ? "No data yet." : "Waiting for live pricesÔÇª"}
+                    {pricesLoaded ? "No data yet." : "Waiting for live prices…"}
                 </p>
             </div>
         );

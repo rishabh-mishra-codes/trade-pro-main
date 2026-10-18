@@ -2,7 +2,6 @@ import { memo, useEffect, useRef, useState } from "react";
 import { FaSearch, FaPlus } from "react-icons/fa";
 import { searchStocks } from "../services/watchlistService";
 import { useDebounce } from "../hooks/useDebounce";
-
 // Debounced stock search dropdown. onPick(stock) is called when a result is
 // selected/added. Memoized to avoid re-rendering with the parent.
 function StockSearch({ onPick }) {
@@ -11,7 +10,6 @@ function StockSearch({ onPick }) {
     const [open, setOpen] = useState(false);
     const debounced = useDebounce(query, 250);
     const boxRef = useRef(null);
-
     useEffect(() => {
         let active = true;
         if (!debounced.trim()) {
@@ -25,7 +23,6 @@ function StockSearch({ onPick }) {
             active = false;
         };
     }, [debounced]);
-
     useEffect(() => {
         const onClick = (e) => {
             if (boxRef.current && !boxRef.current.contains(e.target)) setOpen(false);
@@ -33,14 +30,12 @@ function StockSearch({ onPick }) {
         document.addEventListener("mousedown", onClick);
         return () => document.removeEventListener("mousedown", onClick);
     }, []);
-
     const pick = (stock) => {
         onPick?.(stock);
         setQuery("");
         setResults([]);
         setOpen(false);
     };
-
     return (
         <div ref={boxRef} className="relative w-full max-w-sm">
             <div className="flex items-center surface rounded-xl px-4 py-2">
@@ -57,9 +52,8 @@ function StockSearch({ onPick }) {
                     className="bg-transparent outline-none w-full text-sm"
                 />
             </div>
-
             {open && results.length > 0 && (
-                <div className="absolute z-50 mt-2 w-full overlay-surface rounded-xl overflow-hidden shadow-2xl max-h-72 overflow-y-auto">
+                <div className="absolute z-50 mt-2 w-full overlay-surface rounded-xl shadow-2xl max-h-72 overflow-y-auto">
                     {results.map((s) => (
                         <button
                             key={s.symbol}
@@ -78,5 +72,4 @@ function StockSearch({ onPick }) {
         </div>
     );
 }
-
 export default memo(StockSearch);

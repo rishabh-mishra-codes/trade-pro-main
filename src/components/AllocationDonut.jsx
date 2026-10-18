@@ -1,4 +1,4 @@
-// Pure SVG portfolio-allocation donut ÔÇö no charting library, no new deps.
+// Pure SVG portfolio-allocation donut — no charting library, no new deps.
 // Each holding becomes one arc segment on a single circle, sized by its
 // `percent` share of 100 via stroke-dasharray, with the offset accumulated
 // across segments so they lay end to end. The SVG is rotated -90deg so the
@@ -62,7 +62,7 @@ export default function AllocationDonut({ allocation }) {
                         />
                         <span className="font-medium">{a.symbol}</span>
                         <span className="text-muted">
-                            {a.percent.toFixed(1)}% ┬À Ôé╣{fmt(a.currentValue)}
+                            {a.percent.toFixed(1)}% · ₹{fmt(a.currentValue)}
                         </span>
                     </li>
                 ))}
