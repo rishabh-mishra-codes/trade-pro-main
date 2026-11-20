@@ -36,13 +36,19 @@ public class SecurityConfig {
                 .sessionManagement(sm ->
                         sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/auth/register",
-                                "/api/auth/login",
-                                "/api/auth/forgot-password",
-                                "/api/auth/reset-password").permitAll()
-                        .requestMatchers("/actuator/health").permitAll()
-                        .anyRequest().authenticated())
+                .requestMatchers(
+                org.springframework.http.HttpMethod.OPTIONS,
+                "/**"
+                ).permitAll()
+                .requestMatchers(
+                "/api/auth/register",
+                "/api/auth/login",
+                "/api/auth/forgot-password",
+                "/api/auth/reset-password"
+                ).permitAll()
+                .requestMatchers("/actuator/health").permitAll()
+                .anyRequest().authenticated()
+                )
                 .addFilterBefore(jwtAuthFilter,
                         UsernamePasswordAuthenticationFilter.class);
 
