@@ -33,7 +33,7 @@ services:
       - key: EXPOSE_RESET_TOKEN
         value: "false"
       - key: MAIL_ENABLED
-        value: "false"
+        value: "true"
       # Set these only if MAIL_ENABLED=true
       - key: MAIL_USERNAME
         sync: false
