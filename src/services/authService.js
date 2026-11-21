@@ -2,7 +2,7 @@
 // The backend issues a JWT which we store in localStorage and send as a
 // Bearer token on authenticated requests.
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+const API_URL =`${import.meta.env.VITE_API_URL}/api` || "http://localhost:8080/api";
 const TOKEN_KEY = "tradepro_token";
 
 function getToken() {
